@@ -1,4 +1,4 @@
-package br.me.vitorcsouza.payflow.transaction_service;
+package br.me.vitorcsouza.payflow.transaction;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
