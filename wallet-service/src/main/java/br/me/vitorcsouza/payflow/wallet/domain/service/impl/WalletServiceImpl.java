@@ -4,12 +4,15 @@ import br.me.vitorcsouza.payflow.wallet.domain.dto.request.CreateWalletRequestDT
 import br.me.vitorcsouza.payflow.wallet.domain.dto.request.CreditBalanceRequestDTO;
 import br.me.vitorcsouza.payflow.wallet.domain.dto.request.DebitBalanceRequestDTO;
 import br.me.vitorcsouza.payflow.wallet.domain.dto.response.WalletResponseDTO;
+import br.me.vitorcsouza.payflow.wallet.domain.model.OutboxEvent;
 import br.me.vitorcsouza.payflow.wallet.domain.model.Wallet;
+import br.me.vitorcsouza.payflow.wallet.domain.repository.OutboxEventRepository;
 import br.me.vitorcsouza.payflow.wallet.domain.repository.WalletRepository;
 import br.me.vitorcsouza.payflow.wallet.domain.service.WalletService;
-import br.me.vitorcsouza.payflow.wallet.domain.event.WalletEventPublisher;
 import br.me.vitorcsouza.payflow.wallet.domain.event.WalletTransactionEvent;
 import br.me.vitorcsouza.payflow.wallet.infra.exception.WalletAlreadyExistsException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,7 +26,8 @@ import java.util.UUID;
 public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;
-    private final WalletEventPublisher walletEventPublisher;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
 
     @Override
@@ -59,7 +63,7 @@ public class WalletServiceImpl implements WalletService {
 
         walletRepository.save(wallet);
 
-        WalletTransactionEvent credit = new WalletTransactionEvent(
+        WalletTransactionEvent event = new WalletTransactionEvent(
                 UUID.randomUUID(),
                 wallet.getId(),
                 request.amount(),
@@ -67,10 +71,13 @@ public class WalletServiceImpl implements WalletService {
                 "CREDIT: +" + request.amount(),
                 LocalDateTime.now()
         );
-        walletEventPublisher.publishTransaction(credit);
+
+        saveOutboxEvent(event);
 
         return WalletResponseDTO.fromEntity(wallet);
     }
+
+
 
     @Override
     @Transactional
@@ -82,7 +89,7 @@ public class WalletServiceImpl implements WalletService {
 
         walletRepository.save(wallet);
 
-        WalletTransactionEvent debit = new WalletTransactionEvent(
+        WalletTransactionEvent event = new WalletTransactionEvent(
                 UUID.randomUUID(),
                 wallet.getId(),
                 request.amount(),
@@ -90,8 +97,29 @@ public class WalletServiceImpl implements WalletService {
                 "DEBIT: -" + request.amount(),
                 LocalDateTime.now()
         );
-        walletEventPublisher.publishTransaction(debit);
+
+        saveOutboxEvent(event);
 
         return WalletResponseDTO.fromEntity(wallet);
+    }
+
+    private void saveOutboxEvent(WalletTransactionEvent event) {
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+
+        OutboxEvent outboxEvent = OutboxEvent.builder()
+                .aggregateType("WALLET")
+                .aggregateId(event.walletId())
+                .eventType(event.getClass().getSimpleName())
+                .payload(payload)
+                .processed(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        outboxEventRepository.save(outboxEvent);
     }
 }
