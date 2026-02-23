@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -56,14 +57,19 @@ public class WalletServiceImpl implements WalletService {
 
         wallet.credit(request.amount());
 
-        walletEventPublisher.publishTransaction(
-                new WalletTransactionEvent(
-                        wallet.getId(),
-                        request.amount(),
-                        "CREDIT"
-                )
+        walletRepository.save(wallet);
+
+        WalletTransactionEvent credit = new WalletTransactionEvent(
+                UUID.randomUUID(),
+                wallet.getId(),
+                request.amount(),
+                "CREDIT",
+                "CREDIT: +" + request.amount(),
+                LocalDateTime.now()
         );
-        return WalletResponseDTO.fromEntity(walletRepository.save(wallet));
+        walletEventPublisher.publishTransaction(credit);
+
+        return WalletResponseDTO.fromEntity(wallet);
     }
 
     @Override
@@ -74,13 +80,18 @@ public class WalletServiceImpl implements WalletService {
 
         wallet.debit(request.amount());
 
-        walletEventPublisher.publishTransaction(
-                new WalletTransactionEvent(
-                        wallet.getId(),
-                        request.amount(),
-                        "DEBIT"
-                )
+        walletRepository.save(wallet);
+
+        WalletTransactionEvent debit = new WalletTransactionEvent(
+                UUID.randomUUID(),
+                wallet.getId(),
+                request.amount(),
+                "DEBIT",
+                "DEBIT: -" + request.amount(),
+                LocalDateTime.now()
         );
-        return WalletResponseDTO.fromEntity(walletRepository.save(wallet));
+        walletEventPublisher.publishTransaction(debit);
+
+        return WalletResponseDTO.fromEntity(wallet);
     }
 }

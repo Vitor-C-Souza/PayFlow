@@ -25,6 +25,9 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(nullable = false, unique = true)
+    private UUID eventId;
+
     @Column(nullable = false)
     private UUID walletId;
 

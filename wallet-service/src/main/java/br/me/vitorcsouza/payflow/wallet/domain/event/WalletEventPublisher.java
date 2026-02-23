@@ -5,17 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-public class WalletEventPublisher {
-    private final RabbitTemplate rabbitTemplate;
+public interface WalletEventPublisher {
 
-    public void publishTransaction(WalletTransactionEvent event) {
-
-        rabbitTemplate.convertAndSend(
-                RabbitMQConfig.EXCHANGE,
-                RabbitMQConfig.ROUTING_KEY,
-                event
-        );
-    }
+    void publishTransaction(WalletTransactionEvent event);
 }

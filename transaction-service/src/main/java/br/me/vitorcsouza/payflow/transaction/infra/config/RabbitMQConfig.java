@@ -1,9 +1,6 @@
 package br.me.vitorcsouza.payflow.transaction.infra.config;
 
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +12,8 @@ public class RabbitMQConfig {
     public static final String QUEUE = "transaction.queue";
     public static final String ROUTING_KEY = "wallet.transaction";
 
+    public static final String DLQ = "transaction.dlq";
+
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(EXCHANGE);
@@ -22,7 +21,16 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue queue() {
-        return new Queue(QUEUE);
+        return QueueBuilder
+                .durable(QUEUE)
+                .withArgument("x-dead-letter-exchange", EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", "wallet.transaction.dlq")
+                .build();
+    }
+
+    @Bean
+    public Queue dlq() {
+        return new Queue(DLQ);
     }
 
     @Bean
@@ -31,6 +39,14 @@ public class RabbitMQConfig {
                 .bind(queue)
                 .to(exchange)
                 .with(ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding dlqBinding(Queue dlq, TopicExchange exchange) {
+        return BindingBuilder
+                .bind(dlq)
+                .to(exchange)
+                .with("wallet.transaction.dlq");
     }
 
     @Bean
