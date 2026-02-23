@@ -1,6 +1,6 @@
 package br.me.vitorcsouza.payflow.wallet.domain.model;
 
-import br.me.vitorcsouza.payflow.wallet.exception.InsufficientBalanceException;
+import br.me.vitorcsouza.payflow.wallet.infra.exception.InsufficientBalanceException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

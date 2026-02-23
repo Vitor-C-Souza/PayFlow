@@ -1,4 +1,4 @@
-package br.me.vitorcsouza.payflow.wallet.exception;
+package br.me.vitorcsouza.payflow.wallet.infra.exception;
 
 public class WalletAlreadyExistsException extends RuntimeException {
     public WalletAlreadyExistsException() {

@@ -7,7 +7,9 @@ import br.me.vitorcsouza.payflow.wallet.domain.dto.response.WalletResponseDTO;
 import br.me.vitorcsouza.payflow.wallet.domain.model.Wallet;
 import br.me.vitorcsouza.payflow.wallet.domain.repository.WalletRepository;
 import br.me.vitorcsouza.payflow.wallet.domain.service.WalletService;
-import br.me.vitorcsouza.payflow.wallet.exception.WalletAlreadyExistsException;
+import br.me.vitorcsouza.payflow.wallet.domain.event.WalletEventPublisher;
+import br.me.vitorcsouza.payflow.wallet.domain.event.WalletTransactionEvent;
+import br.me.vitorcsouza.payflow.wallet.infra.exception.WalletAlreadyExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,8 @@ import java.util.UUID;
 public class WalletServiceImpl implements WalletService {
 
     private final WalletRepository walletRepository;
+    private final WalletEventPublisher walletEventPublisher;
+
 
     @Override
     @Transactional
@@ -52,6 +56,13 @@ public class WalletServiceImpl implements WalletService {
 
         wallet.credit(request.amount());
 
+        walletEventPublisher.publishTransaction(
+                new WalletTransactionEvent(
+                        wallet.getId(),
+                        request.amount(),
+                        "CREDIT"
+                )
+        );
         return WalletResponseDTO.fromEntity(walletRepository.save(wallet));
     }
 
@@ -63,6 +74,13 @@ public class WalletServiceImpl implements WalletService {
 
         wallet.debit(request.amount());
 
+        walletEventPublisher.publishTransaction(
+                new WalletTransactionEvent(
+                        wallet.getId(),
+                        request.amount(),
+                        "DEBIT"
+                )
+        );
         return WalletResponseDTO.fromEntity(walletRepository.save(wallet));
     }
 }

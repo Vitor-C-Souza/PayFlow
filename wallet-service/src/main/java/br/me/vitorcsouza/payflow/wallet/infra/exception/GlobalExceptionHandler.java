@@ -1,4 +1,4 @@
-package br.me.vitorcsouza.payflow.wallet.exception;
+package br.me.vitorcsouza.payflow.wallet.infra.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
