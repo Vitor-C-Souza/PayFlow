@@ -5,6 +5,7 @@ import br.me.vitorcsouza.payflow.wallet.domain.dto.request.CreditBalanceRequestD
 import br.me.vitorcsouza.payflow.wallet.domain.dto.request.DebitBalanceRequestDTO;
 import br.me.vitorcsouza.payflow.wallet.domain.dto.response.WalletResponseDTO;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 public interface WalletService {
@@ -15,4 +16,6 @@ public interface WalletService {
     WalletResponseDTO credit(UUID walletId, CreditBalanceRequestDTO request);
 
     WalletResponseDTO debit(UUID walletId, DebitBalanceRequestDTO request);
+
+    void applyTransaction(UUID transactionId, String type, BigDecimal amount);
 }

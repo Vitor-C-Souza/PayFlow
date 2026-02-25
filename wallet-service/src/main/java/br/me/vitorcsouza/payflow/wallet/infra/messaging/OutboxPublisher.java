@@ -3,7 +3,7 @@ package br.me.vitorcsouza.payflow.wallet.infra.messaging;
 import br.me.vitorcsouza.payflow.wallet.domain.event.WalletTransactionEvent;
 import br.me.vitorcsouza.payflow.wallet.domain.model.OutboxEvent;
 import br.me.vitorcsouza.payflow.wallet.domain.repository.OutboxEventRepository;
-import br.me.vitorcsouza.payflow.wallet.infra.config.RabbitMQConfig;
+import br.me.vitorcsouza.payflow.wallet.infra.config.RabbitConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,8 +35,8 @@ public class OutboxPublisher  {
 
                 WalletTransactionEvent walletTransactionEvent = objectMapper.readValue(event.getPayload(), WalletTransactionEvent.class);
                 rabbitTemplate.convertAndSend(
-                        RabbitMQConfig.EXCHANGE,
-                        RabbitMQConfig.ROUTING_KEY,
+                        RabbitConfig.EXCHANGE,
+                        RabbitConfig.ROUTING_KEY,
                         walletTransactionEvent
                 );
 
