@@ -1,5 +1,6 @@
 package br.me.vitorcsouza.payflow.wallet.infra.config;
 
+import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -9,7 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RabbitMQConfig {
+public class RabbitConfig {
 
     public static final String EXCHANGE = "wallet.events";
     public static final String ROUTING_KEY = "wallet.transaction";
@@ -46,4 +47,12 @@ public class RabbitMQConfig {
 
         return template;
     }
+
+    public static final String TRANSACTION_APPROVED_QUEUE = "transaction.approved";
+
+    @Bean
+    public Queue approvedQueue() {
+        return new Queue(TRANSACTION_APPROVED_QUEUE);
+    }
+
 }

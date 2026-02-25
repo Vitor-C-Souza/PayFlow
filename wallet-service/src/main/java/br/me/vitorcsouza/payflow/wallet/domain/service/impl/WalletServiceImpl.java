@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -78,7 +79,6 @@ public class WalletServiceImpl implements WalletService {
     }
 
 
-
     @Override
     @Transactional
     public WalletResponseDTO debit(UUID walletId, DebitBalanceRequestDTO request) {
@@ -101,6 +101,21 @@ public class WalletServiceImpl implements WalletService {
         saveOutboxEvent(event);
 
         return WalletResponseDTO.fromEntity(wallet);
+    }
+
+    @Override
+    @Transactional
+    public void applyTransaction(UUID walletId, String type, BigDecimal amount) {
+        Wallet wallet = walletRepository
+                .findById(walletId)
+                .orElseThrow();
+
+        switch (type) {
+            case "CREDIT" -> wallet.credit(amount);
+            case "DEBIT" -> wallet.debit(amount);
+        }
+
+        walletRepository.save(wallet);
     }
 
     private void saveOutboxEvent(WalletTransactionEvent event) {

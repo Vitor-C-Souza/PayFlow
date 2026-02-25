@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class RabbitMQConfig {
+public class RabbitConfig {
     public static final String EXCHANGE = "wallet.events";
     public static final String QUEUE = "transaction.queue";
     public static final String ROUTING_KEY = "wallet.transaction";
@@ -52,5 +52,18 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
+    }
+
+    public static final String TRANSACTION_APPROVED_QUEUE = "transaction.approved";
+    public static final String TRANSACTION_REJECTED_QUEUE = "transaction.rejected";
+
+    @Bean
+    public Queue approvedQueue() {
+        return new Queue(TRANSACTION_APPROVED_QUEUE);
+    }
+
+    @Bean
+    public Queue rejectedQueue() {
+        return new Queue(TRANSACTION_REJECTED_QUEUE);
     }
 }
